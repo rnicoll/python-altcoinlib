@@ -10,9 +10,11 @@
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 
-import bitcoin.core
+from altcoin.core import CoreDogeMainParams, CoreDogeTestNetParams
+from bitcoin.core import b2lx
+import bitcoin
 
-class DogeMainParams(bitcoin.core.CoreDogeMainParams):
+class DogeMainParams(CoreDogeMainParams):
     MESSAGE_START = b'\xc0\xc0\xc0\xc0'
     DEFAULT_PORT = 22556
     RPC_PORT = 22555
@@ -24,7 +26,7 @@ class DogeMainParams(bitcoin.core.CoreDogeMainParams):
                        'SCRIPT_ADDR':22,
                        'SECRET_KEY' :158}
 
-class DogeTestNetParams(bitcoin.core.CoreDogeTestNetParams):
+class DogeTestNetParams(CoreDogeTestNetParams):
     MESSAGE_START = b'\xfc\xc1\xb7\xdc'
     DEFAULT_PORT = 44556
     RPC_PORT = 44555
@@ -33,30 +35,25 @@ class DogeTestNetParams(bitcoin.core.CoreDogeTestNetParams):
                        'SCRIPT_ADDR':196,
                        'SECRET_KEY' :241}
 
+available_params = {}
+
 def SelectAltcoinParams(genesis_block_hash):
     """Select the chain parameters to use
 
-    name is one of 'mainnet', 'testnet', or 'regtest'
-
-    Default chain is 'mainnet'
+    genesis_block_hash is the hash of block 0, used to uniquely identify chains
     """
+    global available_params
     global params
-    bitcoin.core._SelectCoreParams(name, coin)
-    if coin == 'BTC':
-        if name == 'mainnet':
-            params = bitcoin.core.coreparams = MainParams()
-        elif name == 'testnet':
-            params = bitcoin.core.coreparams = TestNetParams()
-        elif name == 'regtest':
-            params = bitcoin.core.coreparams = RegTestParams()
-        else:
-            raise ValueError('Unknown Bitcoin chain %r' % name)
-    elif coin == 'DOGE':
-        if name == 'mainnet':
-            params = bitcoin.core.coreparams = DogeMainParams()
-        elif name == 'testnet':
-            params = bitcoin.core.coreparams = DogeTestNetParams()
-        else:
-            raise ValueError('Unknown Dogecoin chain %r' % name)
+    core._SelectAltcoinCoreParams(genesis_block_hash)
+    if genesis_block_hash in available_params:
+        coreparams = available_params[genesis_block_hash]
     else:
-        raise ValueError('Unknown coin %r' % coin)
+        raise ValueError('Unknown blockchain %r' % genesis_block_hash)
+
+# Initialise the available_params list
+for params in [
+      DogeMainParams(),
+      DogeTestNetParams()
+  ]:
+  available_params[b2lx(params.GENESIS_BLOCK.GetHash())] = params
+# TODO: Manually inject Bitcoin params which don't have a genesis block listed as part of them

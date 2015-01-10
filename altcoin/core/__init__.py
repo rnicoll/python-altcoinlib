@@ -10,61 +10,107 @@
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 
-class CAuxPow(CTransaction):
-    __slots__ = ['vChainMerkleBranch', 'nChainIndex', 'parentBlockHeader']
+import struct
 
-    def __init__(self, vin=(), vout=(), nLockTime=0, nVersion=1, vChainMerkleBranch=(), nChainIndex=0, parentBlockHeader=None):
-        super(CBlock, self).__init__(vin, vout, nLockTime, nVersion)
-        object.__setattr__(self, 'vin', vChainMerkleBranch)
+from bitcoin.core import *
+from bitcoin.core.serialize import *
+
+BLOCK_VERSION_DEFAULT = 1 << 0
+BLOCK_VERSION_AUXPOW = 1 << 8
+
+class MerkleHash(object):
+    __slots__ = ['merkleHash']
+  
+    def __init__(self, merkleHash=0):
+        object.__setattr__(self, 'merkleHash', merkleHash)
+
+    @classmethod
+    def stream_deserialize(cls, f):
+        merkleHash = ser_read(f,32)
+        return cls(merkleHash)
+
+    def stream_serialize(self, f):
+        f.write(self.merkleHash)
+    def __repr__(self):
+        return "lx(%s)" % (b2lx(self.merkleHash))
+
+class CAuxPow(CTransaction):
+    """
+    AuxPoW component of the block header, for chains which support it.
+    Note that in the reference client this inherits from CMerkleTx, and
+    as this library has no equivalent the CMerkleTx fields are instead
+    added directly here.
+    """
+    __slots__ = ['hashBlock', 'vMerkleBranch', 'nIndex', 'vChainMerkleBranch', 'nChainIndex', 'parentBlockHeader']
+
+    def __init__(self, vin=(), vout=(), nLockTime=0, nVersion=1, hashBlock=0, vMerkleBranch=None, nIndex=0, vChainMerkleBranch=(), nChainIndex=0, parentBlockHeader=None):
+        super(CAuxPow, self).__init__(vin, vout, nLockTime, nVersion)
+        object.__setattr__(self, 'hashBlock', hashBlock)
+        object.__setattr__(self, 'vMerkleBranch', vMerkleBranch)
+        object.__setattr__(self, 'nIndex', nIndex)
+        object.__setattr__(self, 'vChainMerkleBranch', vChainMerkleBranch)
         object.__setattr__(self, 'nChainIndex', nChainIndex)
         object.__setattr__(self, 'parentBlockHeader', parentBlockHeader)
 
     @classmethod
     def stream_deserialize(cls, f):
-        self = super(CTransaction, cls).stream_deserialize(f)
-        # nVersion = this->nVersion;
-        # READWRITE(vChainMerkleBranch);
-        # READWRITE(nChainIndex);
-        return cls(vin, vout, nLockTime, nVersion)
+        self = super(CAuxPow, cls).stream_deserialize(f)
+
+        hashBlock = ser_read(f,32)
+        vMerkleBranch = VectorSerializer.stream_deserialize(MerkleHash, f)
+        nIndex = struct.unpack(b"<I", ser_read(f,4))[0]
+        vChainMerkleBranch = VectorSerializer.stream_deserialize(MerkleHash, f)
+        nChainIndex = struct.unpack(b"<I", ser_read(f,4))[0]
+        parentBlockHeader = CAltcoinBlockHeader.stream_deserialize(f)
+
+        object.__setattr__(self, 'hashBlock', hashBlock)
+        object.__setattr__(self, 'vMerkleBranch', vMerkleBranch)
+        object.__setattr__(self, 'nIndex', nIndex)
+        object.__setattr__(self, 'vChainMerkleBranch', vChainMerkleBranch)
+        object.__setattr__(self, 'nChainIndex', nChainIndex)
+        object.__setattr__(self, 'parentBlockHeader', parentBlockHeader)
+
+        return self
 
     def stream_serialize(self, f):
         super(CTransaction, cls).stream_serialize(f)
-        # nVersion = this->nVersion;
-        # READWRITE(vChainMerkleBranch);
-        # READWRITE(nChainIndex);
+        f.write(self.hashBlock)
+        VectorSerializer.stream_serialize(self.vMerkleBranch, f)
+        f.write(struct.pack(b"<I", self.nIndex))
+        VectorSerializer.stream_serialize(self.vChainMerkleBranch, f)
+        f.write(struct.pack(b"<I", self.nChainIndex))
+        self.parentBlockHeader.stream_serialize(f)
+
+    def __repr__(self):
+        return "%s(%r, %r, %i, %i, lx(%s), %r, %i, %r, %i, %r)" % \
+                (self.__class__.__name__, self.vin, self.vout, self.nLockTime, self.nVersion, b2lx(self.hashBlock),
+                 self.vMerkleBranch, self.nIndex, self.vChainMerkleBranch, self.nChainIndex, self.parentBlockHeader)
 
 
 class CAltcoinBlockHeader(CBlockHeader):
     """A block header with optional AuxPoW support"""
     __slots__ = ['auxpow']
 
-    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, auxPow=None):
-        object.__setattr__(self, 'nVersion', nVersion)
-        assert len(hashPrevBlock) == 32
-        object.__setattr__(self, 'hashPrevBlock', hashPrevBlock)
-        assert len(hashMerkleRoot) == 32
-        object.__setattr__(self, 'hashMerkleRoot', hashMerkleRoot)
-        object.__setattr__(self, 'nTime', nTime)
-        object.__setattr__(self, 'nBits', nBits)
-        object.__setattr__(self, 'nNonce', nNonce)
+    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, auxpow=None):
+        super(CAltcoinBlockHeader, self).__init__(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce)
         object.__setattr__(self, 'auxpow', auxpow)
 
     @classmethod
     def stream_deserialize(cls, f):
-        self = super(CBlockHeader, cls).stream_deserialize(f)
-        nVersion = struct.unpack(b"<i", ser_read(f,4))[0]
-        hashPrevBlock = ser_read(f,32)
-        hashMerkleRoot = ser_read(f,32)
-        nTime = struct.unpack(b"<I", ser_read(f,4))[0]
-        nBits = struct.unpack(b"<I", ser_read(f,4))[0]
-        nNonce = struct.unpack(b"<I", ser_read(f,4))[0]
-        # FIXME: Parse auxpow
-        # object.__setattr__(self, 'auxpow', auxpow)
+        self = super(CAltcoinBlockHeader, cls).stream_deserialize(f)
+
+        if (self.nVersion & BLOCK_VERSION_AUXPOW):
+          auxpow = CAuxPow.stream_deserialize(f)
+        else:
+          auxpow = None
+        object.__setattr__(self, 'auxpow', auxpow)
+
         return self
 
     def stream_serialize(self, f):
         super(CBlockHeader, cls).stream_serialize(f)
-        # Write out the AuxPow
+        if (nVersion & BLOCK_VERSION_AUXPOW):
+          self.auxpow.stream_serialize(f)
 
     @staticmethod
     def calc_difficulty(nBits):
@@ -74,17 +120,27 @@ class CAltcoinBlockHeader(CBlockHeader):
     difficulty = property(lambda self: CAltcoinBlockHeader.calc_difficulty(self.nBits))
 
     def __repr__(self):
-        return "%s(%i, lx(%s), lx(%s), %s, 0x%08x, 0x%08x)" % \
+        return "%s(%i, lx(%s), lx(%s), %s, 0x%08x, 0x%08x, %s)" % \
                 (self.__class__.__name__, self.nVersion, b2lx(self.hashPrevBlock), b2lx(self.hashMerkleRoot),
-                 self.nTime, self.nBits, self.nNonce)
+                 self.nTime, self.nBits, self.nNonce, self.auxpow)
 
-class CAltcoinBlock(CAltcoinBlockHeader, CBlock):
+class CAltcoinBlock(CAltcoinBlockHeader):
     """A block including all transactions in it"""
     __slots__ = ['vtx', 'vMerkleTree']
 
-    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, vtx=()):
+    def calc_merkle_root(self):
+        """Calculate the merkle root
+
+        The calculated merkle root is not cached; every invocation
+        re-calculates it from scratch.
+        """
+        if not len(self.vtx):
+            raise ValueError('Block contains no transactions')
+        return self.build_merkle_tree_from_txs(self.vtx)[-1]
+
+    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, auxpow=None, vtx=()):
         """Create a new block"""
-        super(CAltcoinBlockHeader, self).__init__(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce)
+        super(CAltcoinBlock, self).__init__(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce, auxpow)
 
         vMerkleTree = tuple(CBlock.build_merkle_tree_from_txs(vtx))
         object.__setattr__(self, 'vMerkleTree', vMerkleTree)
@@ -92,7 +148,7 @@ class CAltcoinBlock(CAltcoinBlockHeader, CBlock):
 
     @classmethod
     def stream_deserialize(cls, f):
-        self = super(CAltcoinBlockHeader, cls).stream_deserialize(f)
+        self = super(CAltcoinBlock, cls).stream_deserialize(f)
 
         vtx = VectorSerializer.stream_deserialize(CTransaction, f)
         vMerkleTree = tuple(CBlock.build_merkle_tree_from_txs(vtx))
@@ -102,7 +158,7 @@ class CAltcoinBlock(CAltcoinBlockHeader, CBlock):
         return self
 
     def stream_serialize(self, f):
-        super(CAltcoinBlockHeader, self).stream_serialize(f)
+        super(CAltcoinBlock, self).stream_serialize(f)
         VectorSerializer.stream_serialize(CTransaction, self.vtx, f)
 
     def get_header(self):
@@ -110,7 +166,7 @@ class CAltcoinBlock(CAltcoinBlockHeader, CBlock):
 
         Returned header is a new object.
         """
-        return CBlockHeader(nVersion=self.nVersion,
+        return CAltcoinBlockHeader(nVersion=self.nVersion,
                             hashPrevBlock=self.hashPrevBlock,
                             hashMerkleRoot=self.hashMerkleRoot,
                             nTime=self.nTime,
@@ -118,40 +174,52 @@ class CAltcoinBlock(CAltcoinBlockHeader, CBlock):
                             nNonce=self.nNonce,
                             auxpow=self.auxpow)
 
+    def GetHash(self):
+        """Return the block hash
+
+        Note that this is the hash of the header, not the entire serialized
+        block.
+        """
+        try:
+            return self._cached_GetHash
+        except AttributeError:
+            _cached_GetHash = self.get_header().GetHash()
+            object.__setattr__(self, '_cached_GetHash', _cached_GetHash)
+            return _cached_GetHash
+
 class CoreDogeMainParams(CoreChainParams):
     NAME = 'dogecoin_main'
-    GENESIS_BLOCK = CAltcoinBlock.deserialize(x('010000000000000000000000000000000000000000000000000000000000000000000000696ad20e2dd4365c7459b4a4a5af743d5e92c6da3229e6532cd605f6533f2a5b24a6a152f0ff0f1e678601000101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1004ffff001d0104084e696e746f6e646fffffffff010058850c020000004341040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9ac00000000'))
+    GENESIS_BLOCK = CBlock.deserialize(x('010000000000000000000000000000000000000000000000000000000000000000000000696ad20e2dd4365c7459b4a4a5af743d5e92c6da3229e6532cd605f6533f2a5b24a6a152f0ff0f1e678601000101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1004ffff001d0104084e696e746f6e646fffffffff010058850c020000004341040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9ac00000000'))
     SUBSIDY_HALVING_INTERVAL = 100000
     PROOF_OF_WORK_LIMIT = 2**256-1 >> 32
 
 class CoreDogeTestNetParams(CoreDogeMainParams):
     NAME = 'dogecoin_test'
-    GENESIS_BLOCK = CAltcoinBlock.deserialize(x('010000000000000000000000000000000000000000000000000000000000000000000000696ad20e2dd4365c7459b4a4a5af743d5e92c6da3229e6532cd605f6533f2a5bb9a7f052f0ff0f1ef7390f000101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1004ffff001d0104084e696e746f6e646fffffffff010058850c020000004341040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9ac00000000'))
+    GENESIS_BLOCK = CBlock.deserialize(x('010000000000000000000000000000000000000000000000000000000000000000000000696ad20e2dd4365c7459b4a4a5af743d5e92c6da3229e6532cd605f6533f2a5bb9a7f052f0ff0f1ef7390f000101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1004ffff001d0104084e696e746f6e646fffffffff010058850c020000004341040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9ac00000000'))
 
-ALTCOIN_PARAMS = [
-    CoreMainParams(),
-    CoreTestNetParams(),
-    CoreRegTestParams(),
-    CoreDogeMainParams(),
-    CoreDogeTestNetParams()
-]
-ALTCOINS = {}
+available_core_params = {}
 
 def _SelectAltcoinCoreParams(genesis_block_hash):
-    global ALTCOINS
-
     """Select the core chain parameters to use
 
     Don't use this directly, use bitcoin.SelectParams() instead so both
     consensus-critical and general parameters are set properly.
     """
+
+    global available_core_params
     global coreparams
-    if genesis_block_hash in ALTCOINS:
-        coreparams = ALTCOINS[genesis_block_hash]
-    else
+    if genesis_block_hash in available_core_params:
+        coreparams = available_core_params[genesis_block_hash]
+    else:
         raise ValueError('Unknown blockchain %r' % genesis_block_hash)
 
 # Initialise the altcoins list
-for params in ALTCOIN_PARAMS:
-  ALTCOINS[b2lx(params.GENESIS_BLOCK.GetHash())] = params
+for params in [
+      CoreMainParams(),
+      CoreTestNetParams(),
+      CoreRegTestParams(),
+      CoreDogeMainParams(),
+      CoreDogeTestNetParams()
+  ]:
+  available_core_params[b2lx(params.GENESIS_BLOCK.GetHash())] = params
 

@@ -11,7 +11,7 @@
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 
-"""Bitcoin Core RPC support"""
+"""Genericised cryptocurrency reference client RPC support"""
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -24,13 +24,16 @@ try:
 except ImportError:
     import urlparse
 
+from altcoin.core import CAltcoinBlock
 import bitcoin
-from bitcoin.core import COIN, lx, b2lx, CBlock, CTransaction, COutPoint, CTxOut
+from bitcoin.rpc import hexlify, unhexlify, JSONRPCException, Proxy
+from bitcoin.core import COIN, lx, b2lx, CTransaction, COutPoint, CTxOut
 from bitcoin.core.script import CScript
 from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret
 
+DEFAULT_HTTP_TIMEOUT = 30
 
-class AltcoinProxy(bitcoin.rpc.Proxy):
+class AltcoinProxy(Proxy):
     def __init__(self, service_url=None,
                        service_port=None,
                        btc_conf_file=None,
