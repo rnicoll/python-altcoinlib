@@ -51,11 +51,14 @@ def SelectParams(genesis_block_hash):
 
 # Initialise the available_params list
 for current_params in [
+      # Can't use Bitcoin main net injection because python-bitcoinlib
+      # doesn't associate the genesis block with its params
+      # bitcoin.MainParams(),
+      bitcoin.TestNetParams(),
       DogeMainParams(),
       DogeTestNetParams()
   ]:
   available_params[b2lx(current_params.GENESIS_BLOCK.GetHash())] = current_params
-# TODO: Manually inject Bitcoin params which don't have a genesis block listed as part of them
 
 
 __all__ = (
