@@ -217,7 +217,7 @@ class CoreDogeTestNetParams(CoreDogeMainParams):
 
 available_core_params = {}
 
-def _SelectAltcoinCoreParams(genesis_block_hash):
+def _SelectCoreParams(genesis_block_hash):
     """Select the core chain parameters to use
 
     Don't use this directly, use bitcoin.SelectParams() instead so both
@@ -249,5 +249,5 @@ __all__ = (
         'CAltcoinBlock',
         'CoreDogeMainParams',
         'CoreDogeTestNetParams',
-        '_SelectAltcoinCoreParams',
+        '_SelectCoreParams',
 )

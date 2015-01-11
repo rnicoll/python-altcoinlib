@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import unittest
 
 from altcoin.core import *
+from bitcoin.core import lx, x
 
 class Test_CAuxPow(unittest.TestCase):
     def test_deserialization(self):

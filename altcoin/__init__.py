@@ -10,9 +10,9 @@
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 
-from altcoin.core import CoreDogeMainParams, CoreDogeTestNetParams
+from altcoin.core import CoreDogeMainParams, CoreDogeTestNetParams, _SelectCoreParams
 from bitcoin.core import b2lx
-import bitcoin
+from bitcoin import params
 
 class DogeMainParams(CoreDogeMainParams):
     MESSAGE_START = b'\xc0\xc0\xc0\xc0'
@@ -37,23 +37,30 @@ class DogeTestNetParams(CoreDogeTestNetParams):
 
 available_params = {}
 
-def SelectAltcoinParams(genesis_block_hash):
+def SelectParams(genesis_block_hash):
     """Select the chain parameters to use
 
     genesis_block_hash is the hash of block 0, used to uniquely identify chains
     """
     global available_params
     global params
-    core._SelectAltcoinCoreParams(genesis_block_hash)
+    _SelectCoreParams(genesis_block_hash)
     if genesis_block_hash in available_params:
         coreparams = available_params[genesis_block_hash]
     else:
         raise ValueError('Unknown blockchain %r' % genesis_block_hash)
 
 # Initialise the available_params list
-for params in [
+for current_params in [
       DogeMainParams(),
       DogeTestNetParams()
   ]:
-  available_params[b2lx(params.GENESIS_BLOCK.GetHash())] = params
+  available_params[b2lx(current_params.GENESIS_BLOCK.GetHash())] = current_params
 # TODO: Manually inject Bitcoin params which don't have a genesis block listed as part of them
+
+
+__all__ = (
+        'DogeMainParams',
+        'DogeTestNetParams',
+        'SelectParams',
+)
