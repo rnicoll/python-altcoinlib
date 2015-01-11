@@ -1,5 +1,5 @@
-# Copyright (C) 2015 The python-altcoinlib developers
 # Copyright (C) 2013-2014 The python-bitcoinlib developers
+# Copyright (C) 2015 The python-altcoinlib developers
 #
 # This file is part of python-altcoinlib.
 #

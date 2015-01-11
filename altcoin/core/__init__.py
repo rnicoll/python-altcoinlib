@@ -241,3 +241,13 @@ for params in [
   ]:
   available_core_params[b2lx(params.GENESIS_BLOCK.GetHash())] = params
 
+
+__all__ = (
+        'MerkleHash',
+        'CAuxPow',
+        'CAltcoinBlockHeader',
+        'CAltcoinBlock',
+        'CoreDogeMainParams',
+        'CoreDogeTestNetParams',
+        '_SelectAltcoinCoreParams',
+)

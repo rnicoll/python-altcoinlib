@@ -13,18 +13,21 @@
 
 import ctypes
 import ctypes.util
-import hashlib
 import sys
+
+from bitcoin.core.key import CECKey, _ssl
 
 # CECKey with added support for key generation
 class AltcoinECKey(CECKey):
     def __init__(self):
-        super(CECKey, self).__init__()
+	CECKey.__init__(self)
 
     def __del__(self):
-        super(CECKey, self).__del__()
+        CECKey.__del__(self)
 
     def get_secretbytes(self):
+        global _ssl
+
         secret = _ssl.EC_KEY_get0_private_key(self.k)
         mb = ctypes.create_string_buffer(32)
         size = _ssl.BN_bn2bin(secret, mb)
@@ -41,6 +44,8 @@ class AltcoinECKey(CECKey):
           return new_buffer.raw
 
     def generate(self):
+        global _ssl
+
         _ssl.EC_KEY_generate_key(self.k)
         return self.k
 
