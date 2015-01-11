@@ -12,7 +12,7 @@
 
 from altcoin.core import CoreDogeMainParams, CoreDogeTestNetParams, _SelectCoreParams
 from bitcoin.core import b2lx
-from bitcoin import params
+import bitcoin
 
 class DogeMainParams(CoreDogeMainParams):
     MESSAGE_START = b'\xc0\xc0\xc0\xc0'
@@ -43,10 +43,9 @@ def SelectParams(genesis_block_hash):
     genesis_block_hash is the hash of block 0, used to uniquely identify chains
     """
     global available_params
-    global params
     _SelectCoreParams(genesis_block_hash)
     if genesis_block_hash in available_params:
-        coreparams = available_params[genesis_block_hash]
+        bitcoin.params = available_params[genesis_block_hash]
     else:
         raise ValueError('Unknown blockchain %r' % genesis_block_hash)
 
