@@ -58,9 +58,9 @@ class CAuxPow(bitcoin.core.CTransaction):
         self = super(CAuxPow, cls).stream_deserialize(f)
 
         hashBlock = ser_read(f,32)
-        vMerkleBranch = VectorSerializer.stream_deserialize(MerkleHash, f)
+        vMerkleBranch = uint256VectorSerializer.stream_deserialize(f)
         nIndex = struct.unpack(b"<I", ser_read(f,4))[0]
-        vChainMerkleBranch = VectorSerializer.stream_deserialize(MerkleHash, f)
+        vChainMerkleBranch = uint256VectorSerializer.stream_deserialize(f)
         nChainIndex = struct.unpack(b"<I", ser_read(f,4))[0]
         parentBlockHeader = CAltcoinBlockHeader.stream_deserialize(f)
 
@@ -76,9 +76,9 @@ class CAuxPow(bitcoin.core.CTransaction):
     def stream_serialize(self, f):
         super(CAuxPow, self).stream_serialize(f)
         f.write(self.hashBlock)
-        VectorSerializer.stream_serialize(MerkleHash, self.vMerkleBranch, f)
+        uint256VectorSerializer.stream_serialize(self.vMerkleBranch, f)
         f.write(struct.pack(b"<I", self.nIndex))
-        VectorSerializer.stream_serialize(MerkleHash, self.vChainMerkleBranch, f)
+        uint256VectorSerializer.stream_serialize(self.vChainMerkleBranch, f)
         f.write(struct.pack(b"<I", self.nChainIndex))
         self.parentBlockHeader.stream_serialize(f)
 
@@ -131,7 +131,7 @@ class CAltcoinBlockHeader(bitcoin.core.CBlockHeader):
         Note that this is the hash of the header without any AuxPoW data,
         not the entire serialized block.
         """
-        return CBlockHeader(nVersion=self.nVersion,
+        return bitcoin.core.CBlockHeader(nVersion=self.nVersion,
                             hashPrevBlock=self.hashPrevBlock,
                             hashMerkleRoot=self.hashMerkleRoot,
                             nTime=self.nTime,
