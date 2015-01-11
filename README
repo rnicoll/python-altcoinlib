@@ -1,5 +1,16 @@
 python-altcoinlib
 -----------------
 
-This Python2/3 library provides a wrapper around python-bitcoinlib, extending it
-in order to add altcoin support (initially Bitcoin).
+This Python2/3 library provides a wrapper around Peter Todd's python-bitcoinlib,
+extending it in order to add altcoin support (initially Dogecoin). Please
+consult python-bitcoinlib's documentation for an API overview.
+
+
+Unit tests
+----------
+
+Under altcoin/tests are unit tests based on data extracted from Dogecoin blockchains. To
+run the tests:
+
+python -m unittest discover
+python3 -m unittest discover
