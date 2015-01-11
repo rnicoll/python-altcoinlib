@@ -73,11 +73,11 @@ class CAuxPow(CTransaction):
         return self
 
     def stream_serialize(self, f):
-        super(CTransaction, cls).stream_serialize(f)
+        super(CAuxPow, self).stream_serialize(f)
         f.write(self.hashBlock)
-        VectorSerializer.stream_serialize(self.vMerkleBranch, f)
+        VectorSerializer.stream_serialize(MerkleHash, self.vMerkleBranch, f)
         f.write(struct.pack(b"<I", self.nIndex))
-        VectorSerializer.stream_serialize(self.vChainMerkleBranch, f)
+        VectorSerializer.stream_serialize(MerkleHash, self.vChainMerkleBranch, f)
         f.write(struct.pack(b"<I", self.nChainIndex))
         self.parentBlockHeader.stream_serialize(f)
 
@@ -108,8 +108,8 @@ class CAltcoinBlockHeader(CBlockHeader):
         return self
 
     def stream_serialize(self, f):
-        super(CBlockHeader, cls).stream_serialize(f)
-        if (nVersion & BLOCK_VERSION_AUXPOW):
+        super(CAltcoinBlockHeader, self).stream_serialize(f)
+        if (self.nVersion & BLOCK_VERSION_AUXPOW):
           self.auxpow.stream_serialize(f)
 
     @staticmethod
@@ -123,6 +123,19 @@ class CAltcoinBlockHeader(CBlockHeader):
         return "%s(%i, lx(%s), lx(%s), %s, 0x%08x, 0x%08x, %s)" % \
                 (self.__class__.__name__, self.nVersion, b2lx(self.hashPrevBlock), b2lx(self.hashMerkleRoot),
                  self.nTime, self.nBits, self.nNonce, self.auxpow)
+
+    def GetHash(self):
+        """Return the block hash
+
+        Note that this is the hash of the header without any AuxPoW data,
+        not the entire serialized block.
+        """
+        return CBlockHeader(nVersion=self.nVersion,
+                            hashPrevBlock=self.hashPrevBlock,
+                            hashMerkleRoot=self.hashMerkleRoot,
+                            nTime=self.nTime,
+                            nBits=self.nBits,
+                            nNonce=self.nNonce).GetHash()
 
 class CAltcoinBlock(CAltcoinBlockHeader):
     """A block including all transactions in it"""
@@ -177,13 +190,18 @@ class CAltcoinBlock(CAltcoinBlockHeader):
     def GetHash(self):
         """Return the block hash
 
-        Note that this is the hash of the header, not the entire serialized
-        block.
+        Note that this is the hash of the header without any AuxPoW data,
+        not the entire serialized block.
         """
         try:
             return self._cached_GetHash
         except AttributeError:
-            _cached_GetHash = self.get_header().GetHash()
+            _cached_GetHash = CBlockHeader(nVersion=self.nVersion,
+                            hashPrevBlock=self.hashPrevBlock,
+                            hashMerkleRoot=self.hashMerkleRoot,
+                            nTime=self.nTime,
+                            nBits=self.nBits,
+                            nNonce=self.nNonce).GetHash()
             object.__setattr__(self, '_cached_GetHash', _cached_GetHash)
             return _cached_GetHash
 
