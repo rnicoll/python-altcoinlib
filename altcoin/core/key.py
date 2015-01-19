@@ -25,7 +25,7 @@ class CAltcoinECKey(CECKey):
     def __del__(self):
         CECKey.__del__(self)
 
-    def get_secretbytes(self):
+    def get_secret_bytes(self):
         global _ssl
 
         secret = _ssl.EC_KEY_get0_private_key(self.k)
