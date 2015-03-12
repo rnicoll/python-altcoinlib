@@ -36,7 +36,7 @@ def burn_txins(rpc, quantity, txins):
     if not tx_signed['complete']:
         raise Error('Transaction came back without all inputs signed.')
     rpc.sendrawtransaction(tx_signed['tx'])
-    print 'Burnt ' + quantity + ' DOGE'
+    print 'Burnt ' + str(quantity / COIN) + ' DOGE in TX ID ' + b2lx(tx_signed['tx'].GetHash())
 
 # Select Dogecoin test network
 altcoin.SelectParams('bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e')
@@ -45,7 +45,7 @@ rpc = AltcoinProxy(service_port=44555, btc_conf_file=os.path.expanduser('~/.doge
 txins = []
 quantity = 0
 for txout in rpc.listunspent(0):
-    if txout['amount'] <= 1.00000000:
+    if txout['amount'] <= COIN:
         txins.append(CMutableTxIn(txout['outpoint']))
         quantity += txout['amount']
         if len(txins) > 100:
