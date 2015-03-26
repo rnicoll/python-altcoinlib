@@ -2,7 +2,7 @@
 
 # Copyright (C) 2015 The python-altcoinlib developers
 #
-# This file is part of python-bitcoinalt.
+# This file is part of python-altcoinlib.
 #
 # It is subject to the license terms in the LICENSE file found in the top-level
 # directory of this distribution.
