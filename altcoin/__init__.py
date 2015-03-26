@@ -15,6 +15,28 @@ from altcoin.core import CoreLtcMainParams, CoreLtcTestNetParams
 from bitcoin.core import b2lx
 import bitcoin
 
+# Litecoin main/testnet information  
+#
+# Ports:
+# https://github.com/litecoin-project/litecoin/blob/master-0.8/src/protocol.h#L19
+#
+# RPC Ports:
+# https://github.com/litecoin-project/litecoin/blob/master-0.8/src/bitcoinrpc.cpp#L40
+#
+# Seeds: 
+# https://github.com/litecoin-project/litecoin/blob/master-0.8/src/net.cpp#L1175
+#
+# Message start:
+# https://github.com/litecoin-project/litecoin/blob/master-0.8/src/main.cpp#L3082
+# https://github.com/litecoin-project/litecoin/blob/master-0.8/src/main.cpp#L2745 
+#
+# Base58 prefixes:
+# https://github.com/litecoin-project/litecoin/blob/master-0.8/src/base58.h#L275
+#
+# Proof of work limit:
+# https://github.com/litecoin-project/litecoin/blob/master-0.8/src/main.cpp#L39 
+#
+
 class LtcMainParams(CoreLtcMainParams):
     MESSAGE_START = b'\xfb\xc0\xb6\xdb'
     DEFAULT_PORT = 9333
@@ -27,6 +49,7 @@ class LtcMainParams(CoreLtcMainParams):
     BASE58_PREFIXES = {'PUBKEY_ADDR':48,
                        'SCRIPT_ADDR':5,
                        'SECRET_KEY' :176}
+
 class LtcTestNetParams(CoreLtcTestNetParams):
     MESSAGE_START = b'\xfc\xc1\xb7\xdc'
     DEFAULT_PORT = 19333 
@@ -39,6 +62,10 @@ class LtcTestNetParams(CoreLtcTestNetParams):
                        'SECRET_KEY' :239}
 
 
+# Dogecoin main/testnet information  
+# 
+# See 
+# https://github.com/dogecoin/dogecoin/blob/1.8-maint/src/chainparams.cpp
 
 class DogeMainParams(CoreDogeMainParams):
     MESSAGE_START = b'\xc0\xc0\xc0\xc0'
