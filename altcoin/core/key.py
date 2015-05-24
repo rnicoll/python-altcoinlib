@@ -20,7 +20,7 @@ from bitcoin.core.key import CECKey, _ssl
 # CECKey with added support for key generation
 class CAltcoinECKey(CECKey):
     def __init__(self):
-	CECKey.__init__(self)
+        CECKey.__init__(self)
 
     def __del__(self):
         CECKey.__del__(self)
