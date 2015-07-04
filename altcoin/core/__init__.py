@@ -117,7 +117,7 @@ class CAltcoinBlockHeader(bitcoin.core.CBlockHeader):
     def calc_difficulty(nBits):
         # FIXME: Handle alternative difficulty calculation methods such as
         # Dogecoin's
-        CBlockHeader.calc_difficulty(nBits)
+        bitcoin.core.CBlockHeader.calc_difficulty(nBits)
     difficulty = property(lambda self: CAltcoinBlockHeader.calc_difficulty(self.nBits))
 
     def __repr__(self):
