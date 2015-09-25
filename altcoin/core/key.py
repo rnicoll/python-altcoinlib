@@ -13,9 +13,9 @@
 
 import ctypes
 import ctypes.util
-import sys
 
 from bitcoin.core.key import CECKey, _ssl
+
 
 # CECKey with added support for key generation
 class CAltcoinECKey(CECKey):
@@ -32,16 +32,16 @@ class CAltcoinECKey(CECKey):
         mb = ctypes.create_string_buffer(32)
         size = _ssl.BN_bn2bin(secret, mb)
         if size == 32:
-          return mb.raw
+            return mb.raw
         else:
-          # Move the data into a zero-padded buffer of 32 bytes
-          padding = 32 - size
-          new_buffer = ctypes.create_string_buffer(32)
-          for idx in range(0, padding):
-              new_buffer[idx] = "\x00"
-          for idx in range(padding, 32):
-              new_buffer[idx] = mb[idx - padding]
-          return new_buffer.raw
+            # Move the data into a zero-padded buffer of 32 bytes
+            padding = 32 - size
+            new_buffer = ctypes.create_string_buffer(32)
+            for idx in range(0, padding):
+                new_buffer[idx] = "\x00"
+            for idx in range(padding, 32):
+                new_buffer[idx] = mb[idx - padding]
+            return new_buffer.raw
 
     def generate(self):
         global _ssl
@@ -50,5 +50,5 @@ class CAltcoinECKey(CECKey):
         return self.k
 
 __all__ = (
-        'AltcoinECKey',
+    'CAltcoinECKey',
 )
