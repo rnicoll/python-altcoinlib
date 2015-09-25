@@ -24,4 +24,4 @@ altcoin.SelectParams('bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d073
 
 rpc = AltcoinProxy(service_port=44555, btc_conf_file=os.path.expanduser('~/.dogecoin/dogecoin.conf'))
 best_block_hash = rpc.getblockchaininfo()['bestblockhash']
-print rpc.getblock(lx(best_block_hash))
+print (rpc.getblock(lx(best_block_hash)))
