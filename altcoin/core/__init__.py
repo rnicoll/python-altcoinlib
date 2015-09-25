@@ -187,6 +187,10 @@ class CAltcoinBlock(CAltcoinBlockHeader):
                             nBits=self.nBits,
                             nNonce=self.nNonce,
                             auxpow=self.auxpow)
+    def __repr__(self):
+        return "%s(%i, lx(%s), lx(%s), %s, 0x%08x, 0x%08x, %s, vMerkleTree(%s), vtx(%s))" % \
+                (self.__class__.__name__, self.nVersion, b2lx(self.hashPrevBlock), b2lx(self.hashMerkleRoot),
+                 self.nTime, self.nBits, self.nNonce, self.auxpow, self.vMerkleTree, self.vtx)
 
     def GetHash(self):
         """Return the block hash
