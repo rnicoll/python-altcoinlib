@@ -12,9 +12,10 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import os
 import unittest
 
-from altcoin.core import *
+from altcoin.core import CAltcoinBlock, CAltcoinBlockHeader, CAuxPow
 from bitcoin.core import lx, x
 
 class Test_CAuxPow(unittest.TestCase):
@@ -53,3 +54,12 @@ class Test_CAltcoinBlockHeader(unittest.TestCase):
         self.assertEqual(testnet_auxpow_block.GetHash(),
                       lx('394c537ad0e73d1f8a57a254b5473715c691cfcde79836c89ae9dc6823e61faa'))
 
+    def test_deserializedogecoinblock(self):
+        """
+        Test for truncated transactions as per issue #5: https://github.com/rnicoll/python-altcoinlib/issues/5
+        """
+        with open(os.path.dirname(__file__) + '/data/dogecoin_block_884490.bin', 'rb') as fd:
+            block_dogecoin_884490 = CAltcoinBlock.deserialize(fd.read())
+            self.assertEqual(13, len(block_dogecoin_884490.vtx))
+            self.assertEqual(lx('f02560999734fa4cab1c3cbd2212458ec95f355eb7843ef4f1e9aa76fbec85a8'), block_dogecoin_884490.vtx[11].GetHash())
+            self.assertEqual(lx('7050769feb2aa18fc0d2b55bdbb4414de007a6bda15fd692aca3d74d46447793'), block_dogecoin_884490.vtx[12].GetHash())
