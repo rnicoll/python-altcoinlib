@@ -11,17 +11,19 @@
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 
-"""Pull the latest block in from a Dogecoin testnet client"""
+"""Take a list of block heights and return block from Dogecoin testnet client"""
 
 import sys
-import os.path
+from os.path import expanduser
 
 import altcoin
 from altcoin.rpc import AltcoinProxy
-from bitcoin.core import lx
 
-altcoin.SelectParams('bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e')
+altcoin.SelectParams(
+    'bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e')
 
-rpc = AltcoinProxy(service_port=44555, btc_conf_file=os.path.expanduser('~/.dogecoin/dogecoin.conf'))
-best_block_hash = rpc.getblockchaininfo()['bestblockhash']
-print (rpc.getblock(lx(best_block_hash)))
+rpc = AltcoinProxy(service_port=44555,
+                   btc_conf_file=expanduser('~/.dogecoin/dogecoin.conf'))
+
+for block_height in sys.argv[1:]:
+    print (rpc.getblock(rpc.getblockhash(int(block_height))))
