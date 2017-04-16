@@ -23,5 +23,5 @@ from bitcoin.core import lx
 altcoin.SelectParams('bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e')
 
 rpc = AltcoinProxy(service_port=44555, btc_conf_file=os.path.expanduser('~/.dogecoin/dogecoin.conf'))
-best_block_hash = rpc.getblockchaininfo()['bestblockhash']
+best_block_hash = rpc.getbestblockhash()
 print (rpc.getblock(lx(best_block_hash)))

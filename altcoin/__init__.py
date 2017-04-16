@@ -15,6 +15,11 @@ from altcoin.core import CoreLtcMainParams, CoreLtcTestNetParams
 from bitcoin.core import b2lx
 import bitcoin
 
+# Note that setup.py can break if __init__.py imports any external
+# dependencies, as these might not be installed when setup.py runs. In this
+# case __version__ could be moved to a separate version.py and imported here.
+__version__ = '0.7.0'
+
 # Litecoin main/testnet information  
 #
 # Ports:
