@@ -9,7 +9,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README')) as f:
     README = f.read()
 
-requires = ['python-bitcoinlib>=0.4.0']
+requires = ['python-bitcoinlib>=0.8.0']
 
 setup(name='python-altcoinlib',
       version=__version__,
