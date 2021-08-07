@@ -17,7 +17,7 @@ from __future__ import absolute_import, division, print_function,\
     unicode_literals
 
 from altcoin.core import CAltcoinBlock
-from bitcoin.rpc import unhexlify, JSONRPCException, Proxy
+from bitcoin.rpc import unhexlify, JSONRPCError, Proxy
 from bitcoin.core import b2lx
 
 DEFAULT_HTTP_TIMEOUT = 30
@@ -65,7 +65,7 @@ class AltcoinProxy(Proxy):
                 (self.__class__.__name__, block_hash.__class__))
         try:
             r = self._call('getblock', block_hash, False)
-        except JSONRPCException as ex:
+        except JSONRPCError as ex:
             raise IndexError('%s.getblock(): %s (%d)' %
                              (self.__class__.__name__, ex.error['message'],
                               ex.error['code']))
