@@ -11,6 +11,7 @@
 # LICENSE file.
 
 from altcoin.core import CoreDogeMainParams, CoreDogeTestNetParams, _SelectCoreParams
+from altcoin.core import CoreMonaMainParams, CoreMonaTestNetParams
 from altcoin.core import CoreLtcMainParams, CoreLtcTestNetParams
 from bitcoin.core import b2lx
 import bitcoin
@@ -93,6 +94,33 @@ class DogeTestNetParams(CoreDogeTestNetParams):
                        'SCRIPT_ADDR':196,
                        'SECRET_KEY' :241}
 
+# Monacoin main/testnet information
+#
+# See
+# https://github.com/dogecoin/dogecoin/blob/1.8-maint/src/chainparams.cpp
+
+class MonaMainParams(CoreMonaMainParams):
+    MESSAGE_START = b'\xfb\xc0\xb6\xdb'
+    DEFAULT_PORT = 9401
+    RPC_PORT = 9402
+    DNS_SEEDS = (('monacoin.org', 'seed.monacoin.org'))
+    BASE58_PREFIXES = {'PUBKEY_ADDR':50,
+                       'SCRIPT_ADDR':5,
+                       'SCRIPT_ADDR2':55,
+                       'SECRET_KEY' :176,
+                       'OLD_SECRET_KEY' :178}
+
+class MonaTestNetParams(CoreMonaTestNetParams):
+    MESSAGE_START = b'\xfb\xd2\xc8\xf1'
+    DEFAULT_PORT = 19403
+    RPC_PORT = 19402
+    DNS_SEEDS = (('monacoin.org', 'testnet-dnsseed.monacoin.org'))
+    BASE58_PREFIXES = {'PUBKEY_ADDR':111,
+                       'SCRIPT_ADDR':196,
+                       'SCRIPT_ADDR2':117,
+                       'SECRET_KEY' :239,
+                       'OLD_SECRET_KEY' :239}
+
 available_params = {}
 
 def SelectParams(genesis_block_hash):
@@ -115,6 +143,8 @@ for current_params in [
       bitcoin.TestNetParams(),
       DogeMainParams(),
       DogeTestNetParams(),
+      MonaMainParams(),
+      MonaTestNetParams(),
       LtcMainParams(),
       LtcTestNetParams()
   ]:
@@ -124,6 +154,8 @@ for current_params in [
 __all__ = (
         'LtcMainParams',
         'LtcTestNetParams',
+        'MonaMainParams',
+        'MonaTestNetParams',
         'DogeMainParams',
         'DogeTestNetParams',
         'SelectParams',
